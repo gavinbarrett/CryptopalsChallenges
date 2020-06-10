@@ -1,5 +1,5 @@
-single_byte_xor: single_byte_xor.c
-	gcc -Wall -Werror -std=c11 single_byte_xor.c -o single_byte_xor -lm
+break_single_byte: break.c single_byte_xor.c
+	gcc -Wall -Werror -std=c11 -o break_single_byte break.c single_byte_xor.c -I. -lm
 
 clean:
-	rm single_byte_xor
+	rm break_single_byte
