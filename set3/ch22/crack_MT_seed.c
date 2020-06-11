@@ -1,5 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <unistd.h>
+#include <time.h>
 
 unsigned int a = 0x9908B0DF;
 unsigned int u = 11;
@@ -54,10 +56,47 @@ unsigned int extract_number() {
 	return y;
 }
 
+int get_random(int min, int max) {
+	return min + rand() % (max + 1 - min);
+}
+
+int get_timestamp() {
+	return (int)time(NULL);
+}
+
+int crack_seed() {
+	// get current time
+	int start_time = get_timestamp();
+	printf("Starting analysis at %d\n", start_time);
+
+	// seed random generator for wait_time
+	srand(start_time);
+	
+	// get a random wait time
+	int wait_time = get_random(40, 1000);
+
+	// wait random number of second
+	sleep(wait_time);
+
+	// seed the MT generator with the time after waiting
+	seed_mt(get_timestamp());
+	
+	// save the number for the seed we want to crack
+	int number = extract_number();
+
+	// 
+	for (int i = 40; i < 1000; i++) {
+		seed_mt(start_time + i);
+		if (number == extract_number()) {
+			return start_time + i;
+		}
+	}
+	return 0;
+}
+
 int main() {
-	unsigned int s = 1131464071;
-	seed_mt(s);
-	for (int i = 0; i < 10; i++)
-		printf("%u\n", extract_number());
+	int seed = crack_seed();
+	if (seed)
+		printf("Seed cracked!\n%d\n", seed);
 	return 0;
 }
