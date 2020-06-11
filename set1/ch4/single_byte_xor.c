@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 #include <math.h>
 
@@ -20,13 +21,13 @@ char decode(char a, char b) {
 	return (c |= b);
 }
 
-float compute_exp(int c, int len, float n_obs) {
+float compute_exp(int c, float n_obs) {
 	if ((c > 96) && (c < 123)) {
 		c -= 97;
-		return freq_table[c] * len;		
+		return freq_table[c];		
 	} else if ((c > 64) && (c < 91)) {
 		c -= 65;
-		return freq_table[c] * len;
+		return freq_table[c];
 	} else if (c == 32) {
 		c -= 5;
 		return freq_table[c];
@@ -35,8 +36,8 @@ float compute_exp(int c, int len, float n_obs) {
 }
 
 float compute_obs(char c, char string[]) {
-	int sz = (int)strlen(string);
-	float acc = 0;
+	float sz = (double)strlen(string);
+	float acc = 0.0;
 	for (int i = 0; i < sz; i++) {
 		if (string[i] == c)
 			acc++;
@@ -44,51 +45,39 @@ float compute_obs(char c, char string[]) {
 	return acc / sz;
 }
 
-float score_code(char newcode[]) {
-	float acc = 0;
+float score_code(char newcode[], float score) {
 	int sz = (int)strlen(newcode);
 	for (int i = 0; i < sz; i++) {
 		float n_obs = compute_obs(newcode[i], newcode);
-		float n_exp = compute_exp(newcode[i], sz, n_obs);
-		acc += (pow((n_obs - n_exp), 2.0) / n_exp);
+		float n_exp = compute_exp(newcode[i], n_obs);
+		float diff = n_obs - n_exp;
+		float e = 2.0;
+		float p = powf(diff, e);
+		score += (p / n_exp);
 	}
-	return acc;
+	return score;
 }
 
 char break_cipher(char code[], char plaintext[]) {
 	int sz = (int)strlen(alphabet);
 	int clen = (int)strlen(code);
-	float score = 0;
+	float score = 0.0;
 	float sc = 0.0;
 	char key = 0;
 	for (int i = 0; i < sz; i++) {
 		int k = 0;
-		char newcode[35] = {0};
+		char* newcode = malloc(clen);
 		for (int j = 0; j < clen; j+=2) {
 			newcode[k] = decode(code[j], code[j+1]) ^ alphabet[i];
 			k++;
 		}
-		sc = score_code(newcode);
-		if (sc > score) {
+		sc = score_code(newcode, 0.0);
+		if ((sc > score) && (score != (1/0.0))) {
 			score = sc;
 			key = alphabet[i];
-			strncpy(plaintext, newcode, 34);
+			strncpy(plaintext, newcode, clen);
 		}
+		free(newcode);
 	}
 	return key;
 }
-
-/*
-int main() {
-
-	char code[69] = "1b37373331363f78151b7f2b783431333d78397828372d363c78373e783a393b3736";
-	char plaintext[35] = {0};
-	char key = break_cipher(code, plaintext);
-	if (key == 'X') {
-		printf("Cipher broken!\n");
-		printf("\nPlaintext:\n%s\n", plaintext);
-	} else
-		printf("Cipher wasn't broken");
-	return 0;
-}
-*/
