@@ -2,38 +2,16 @@
 #include <time.h>
 #include <gmp.h>
 
-void modular_expo(mpz_t base, mpz_t exp, mpz_t mod, mpz_t* out) {
-	mpz_t z;
-	mpz_init_set_ui(z, 0);
-	if (mpz_cmp_ui(mod, 1) == 0)
-		mpz_set((*out), z);
-	mpz_set_ui((*out), 1);
-	printf("Entering loop\n");
-	gmp_printf("Exp: %Zd\n", exp);
-	while(mpz_cmp(z, exp) != 0) {
-		// out = out * base
-		mpz_mul((*out), (*out), base);
-		// out = out % mod
-		mpz_mod((*out), (*out), mod);
-		// z++
-		mpz_add_ui(z, z, 1);
-		//gmp_printf("z: %Zd\n", z);
-	}
-	printf("Exiting loop\n");
-}
-
 int main(void) {
 	unsigned long seed = time(NULL);
 	mpz_t p;
 	// initialize mpz objects for random numbers
-	//mpz_t rand;
 	mpz_t a;
 	mpz_t A;
 	mpz_t b;
 	mpz_t B;
 	mpz_t s_key_1;
 	mpz_t s_key_2;
-	//mpz_init(rand);
 	mpz_init(a);
 	mpz_init(A);
 	mpz_init(b);
@@ -57,20 +35,23 @@ int main(void) {
 	// compute random b	
 	mpz_urandomb(b, r_state, 80);
 	mpz_mod(b, b, p);
-	
 
 	// compute A = g**a % p
-	modular_expo(g, a, p, &A);
+	mpz_powm(A, g, a, p);
+	//modular_expo(g, a, p, &A);
 	// compute B = g**b % p
-	modular_expo(g, b, p, &B);
+	mpz_powm(B, g, b, p);
+	//modular_expo(g, b, p, &B);
 
 	// compute session key 1 = B**a % p
-	modular_expo(B, a, p, &s_key_1);
+	mpz_powm(s_key_1, B, a, p);
+	//modular_expo(B, a, p, &s_key_1);
 	// compute session key 2 = A**b % p
-	modular_expo(A, b, p, &s_key_2);
+	mpz_powm(s_key_2, A, b, p);
+	//modular_expo(A, b, p, &s_key_2);
 
-	gmp_printf("%Zd\n", s_key_1);
-	gmp_printf("%Zd\n", s_key_2);
-
+	gmp_printf("DH Key 1: %Zd\n", s_key_1);
+	gmp_printf("DH Key 2: %Zd\n", s_key_2);
+	
 	return 0;
 }
