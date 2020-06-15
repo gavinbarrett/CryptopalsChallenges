@@ -38,7 +38,6 @@ int Base64Decode(char* b64message, unsigned char** buffer, size_t* length) { //D
 	return (0); //success
 }
 
-
 char alphabet[53] = {'a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p','q','r','s','t','u','v','w','x','y','z','A','B','C','D','E','F','G','H','I','J','K','L','M','N','O','P','Q','R','S','T','U','V','W','X','Y','Z',' '};
 
 // probabilities source from http://pi.math.cornell.edu/~mec/2003-2004/cryptography/subs/frequencies.html
@@ -121,28 +120,20 @@ unsigned char break_cipher(char code[], char plaintext[]) {
 void key() {
 	char a[40] = "abcdefghijasdffgdssesasfeffftggrjiikef";
 	double l = DBL_MAX;
-	int k = 0;
 	for (int i = 2; i < 20; i++) {
-		printf("i: %d\n", i);
 		for (int j = 0; j < (int)strlen(a)/2; j+=(2*i)) {
-			printf("j: %d\n", j);
 			char* s1 = malloc(i);
 			char* s2 = malloc(i);
 			strncpy(s1, a+j, i);
-			printf("s1: %s\n", s1);
 			strncpy(s2, a+(j+i), i);
-			printf("s2: %s\n", s2);
 			double res = ((double)hamming(s1, s2)) / i;
-			printf("res: %f\n", res);
 			if (res < l) {
 				l = res;
-				k = i;
 			}
 			free(s1);
 			free(s2);
 		}
 	}
-	printf("key: %d", k);
 }
 
 void encrypt(char string[], char key[]) {
@@ -231,14 +222,12 @@ int main(void) {
 		}
 		l++;
 	}
-	/*
 	for (int i = 0; i < key; i++) {
 		printf("Block: ");
 		for (int j = 0; j < l; j++)
-			printf("%02X ", blocks[i][j]);
+			printf("%d ", blocks[i][j]);
 		printf("\n");
 	}
-	*/
 	char plain[100];
 
 	char* enc_key = malloc(key);
