@@ -1,6 +1,8 @@
 #include <stdio.h>
+#include <string.h>
 #include <time.h>
 #include <gmp.h>
+#include <openssl/sha.h>
 
 int main(void) {
 	unsigned long seed = time(NULL);
@@ -50,8 +52,14 @@ int main(void) {
 	mpz_powm(s_key_2, A, b, p);
 	//modular_expo(A, b, p, &s_key_2);
 
-	gmp_printf("DH Key 1: %Zd\n", s_key_1);
-	gmp_printf("DH Key 2: %Zd\n", s_key_2);
+	//gmp_printf("DH Key 1: %Zd\n", s_key_1);
+	//gmp_printf("DH Key 2: %Zd\n", s_key_2);
 	
+	char str[2000];
+	mpz_get_str(str, 10, s_key_1);
+
+	unsigned char* d = SHA256((unsigned char*)str, strlen(str), 0);
+	for (int i = 0; i < SHA256_DIGEST_LENGTH; i++)
+		printf("%02x", d[i]);
 	return 0;
 }
