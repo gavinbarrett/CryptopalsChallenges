@@ -68,7 +68,7 @@ float compute_exp(int c, int len, float n_obs) {
 		c -= 5;
 		return freq_table[c];
 	} else
-		return 0.0;
+		return n_obs;
 }
 
 float compute_obs(char c, char string[]) {
@@ -95,17 +95,17 @@ float score_code(char newcode[]) {
 	return acc;
 }
 
-char break_cipher(char code[], char plaintext[]) {
-	int sz = (int)strlen(alphabet);
+unsigned char break_cipher(char code[], char plaintext[]) {
+	//int sz = (int)strlen(alphabet);
 	int clen = (int)strlen(code);
 	float score = 0;
 	float sc = 0.0;
-	char key = 0;
-	for (int i = 0; i < sz; i++) {
+	unsigned char key = 0;
+	for (int i = 0; i < 256; i++) {
 		int k = 0;
 		char newcode[100] = {0};
 		for (int j = 0; j < clen; j+=2) {
-			newcode[k] = code[j] ^ alphabet[i];
+			newcode[k] = code[j] ^ i;
 			k++;
 		}
 		sc = score_code(newcode);
@@ -150,7 +150,6 @@ void encrypt(char string[], char key[]) {
 	int index = 0;
 	for (int i = 0; i < 2880; i++) {
 		string[i] ^= key[index];
-		printf(" %02X\n", key[index]);
 		index = (index+1) % k_length;
 	}
 }
@@ -181,11 +180,15 @@ int main(void) {
 	for (int i = 2; i < 40; i++) {
 		char* str1 = malloc(i);
 		char* str2 = malloc(i);
-		char* str3 = malloc(i);
-		char* str4 = malloc(i);
+		//char* str3 = malloc(i);
+		//char* str4 = malloc(i);
 		strncpy(str1, nout, i);
 		nout += i;
 		strncpy(str2, nout, i);
+		nout -= i;
+
+		double h = (hamming(str1, str2)*1.0)/i;
+		/*
 		nout += i;
 		strncpy(str3, nout, i);
 		nout += i;
@@ -206,6 +209,7 @@ int main(void) {
 		double four = (one4+two4+three4)/3;
 
 		double h = (one+two+three+four)/4;
+		*/
 
 		if (h < inf) {
 			inf = h;
@@ -213,8 +217,8 @@ int main(void) {
 		}
 		free(str1);
 		free(str2);
-		free(str3);
-		free(str4);
+		//free(str3);
+		//free(str4);
 	}
 
 	char blocks[100][100];
@@ -239,10 +243,11 @@ int main(void) {
 
 	char* enc_key = malloc(key);
 
+	unsigned char kk = 0;
 	for (int i = 0; i < key; i++) {
-		key = break_cipher(blocks[i], plain);
-		printf("BlockKey: %02X\n", key);
-		enc_key[i] = key;
+		kk = break_cipher(blocks[i], plain);
+		printf("BlockKey: %d\n", kk);
+		enc_key[i] = kk;
 	}
 	printf("\nMessage key: \'%s\'\n", enc_key);
 	
