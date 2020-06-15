@@ -62,22 +62,19 @@ double sc(char newcode[]) {
 }
 
 char ciph(char code[], char plaintext[], char x) {
-	int sz = (int)strlen(alphabet);
 	int clen = (int)strlen(code);
 	float score = 0.0;
 	float sc_code = 0.0;
 	char key = 0;
-	for (int i = 0; i < sz; i++) {
+	for (int i = 0; i < 256; i++) {
 		int k = 0;
 		char* newcode = malloc(clen);
 		for (int j = 0; j < clen; j+=2) {
-			newcode[k] = dec(code[j], code[j+1]) ^ alphabet[i];
+			newcode[k] = dec(code[j], code[j+1]) ^ i;
 			k++;
 		}
 		sc_code = sc(newcode);
-		//printf("%f\n", sc_code);
-		if (sc_code > score) {
-			//printf("Char %c for %d: %s\n", alphabet[i], x, newcode);
+		if ((sc_code > score)) {
 			score = sc_code;
 			key = alphabet[i];
 			strncpy(plaintext, newcode, clen);
@@ -98,21 +95,19 @@ int main(void) {
 	int n = 0;
 	char key = 0;
 	char k = 0;
-	while (fgets(buffer, 62, fp) != NULL) {
+	while (fgets(buffer, 61, fp) != NULL) {
 		key = ciph(buffer, plaintext, i);
 		score = sc(plaintext);
-		printf("%s\n", plaintext);
-		//printf("%f\n", score);
 		if (score > min) {
 			min = score;
-			strncpy(splain, plaintext, 62);
+			strncpy(splain, plaintext, 61);
 			k = key;
 			n = i;
 		}
 		i++;
 	}
 	printf("Plaintext: %s\n", splain);
+	printf("key: %d\n", k);
 	printf("line: %d\n", n);
-	printf("key: %c\n", k);
 	return 0;
 }

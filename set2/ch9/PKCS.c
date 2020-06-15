@@ -20,8 +20,8 @@ void pad(char* string) {
 }
 
 int main() {
-	char* x = malloc(17);
-	strcpy(x, "YELLOW SUBMARINE");
+	char* x = malloc(33);
+	strcpy(x, "YELLOW SUBMARINEYELLOW SUBMARINE");
 	pad(x);
 	for (int i = 0; i < (int)strlen(x); i++)
 		printf("%02x\n", x[i]);

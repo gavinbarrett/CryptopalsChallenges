@@ -72,7 +72,7 @@ char break_cipher(char code[], char plaintext[]) {
 			k++;
 		}
 		sc = score_code(newcode, 0.0);
-		if ((sc > score) && (score != (1/0.0))) {
+		if ((sc > score)) {
 			score = sc;
 			key = alphabet[i];
 			strncpy(plaintext, newcode, clen);
