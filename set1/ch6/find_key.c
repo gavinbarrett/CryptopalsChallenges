@@ -216,16 +216,14 @@ int main(void) {
 	int i = 0;
 	int l = 0;
 	for (; i < 2880; i+=key) {
-		
-		for (int j = 0; j < key; j++) {
+		for (int j = 0; j < key; j++)
 			blocks[j][l] = nout[i+j];
-		}
 		l++;
 	}
 	for (int i = 0; i < key; i++) {
-		printf("Block: ");
+		printf("\n");
 		for (int j = 0; j < l; j++)
-			printf("%d ", blocks[i][j]);
+			printf("%02X ", blocks[i][j]);
 		printf("\n");
 	}
 	char plain[100];
@@ -235,7 +233,7 @@ int main(void) {
 	unsigned char kk = 0;
 	for (int i = 0; i < key; i++) {
 		kk = break_cipher(blocks[i], plain);
-		printf("BlockKey: %d\n", kk);
+		//printf("BlockKey: %d\n", kk);
 		enc_key[i] = kk;
 	}
 	printf("\nMessage key: \'%s\'\n", enc_key);

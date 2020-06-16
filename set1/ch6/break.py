@@ -42,27 +42,14 @@ def score_code(newcode):
 	sz = len(newcode)
 	acc = 0.0
 	for i in newcode:
-		#print(f"newcode[i]: {newcode[i]}")
 		n_obs = compute_obs(i, newcode)
-		#print(f"n_obs: {n_obs}")
 		n_exp = compute_exp(ord(i), n_obs, len(newcode))
-		#print(f"n_exp: {n_exp}")
-		#print(f"n_obs: {n_obs}, n_exp: {n_exp}")
 		if (n_exp == 0):
 			continue
 		n = (n_obs - n_exp)
-		#print(f"n: {n}")
-		
 		n2 = n*n
-		#print(f"n2: {n2}")
-		
-		#print(f"n: {n}")
 		res = (n2 / n_exp)
-		#print(f"res: {res}")
-		
-		#print(res)
 		acc += res
-	#print(f"acc: {acc}")
 	return acc
 
 def break_cipher(code):
@@ -71,6 +58,7 @@ def break_cipher(code):
 	score = 0.0
 	sc = 0.0
 	plaintext = ''
+	key = 0
 	b = defaultdict(lambda: 0.0)
 	for i in range(0, sz):
 		newcode = []
@@ -104,8 +92,11 @@ def encrypt(string, key):
 	k_length = len(key)
 	index = 0
 	for i in range(len(string)):
-		new_string.append(string[i] ^ ord(key[index]))
-		index = (index + 1) % k_length
+		if isinstance(key[index], int):
+			new_string.append(string[i] ^ key[index])
+		else:
+			new_string.append(string[i] ^ ord(key[index]))
+		index = (index+1) % k_length
 	return ''.join(chr(n) for n in new_string)
 
 def main():
@@ -115,7 +106,7 @@ def main():
 	for line in f:
 		l += line[:-1]
 	base = b64decode(l)
-	#print(base)
+	ks = []
 	for i in range(2,40):
 		str1 = base[:i]
 		str2 = base[i:i+i]
@@ -123,38 +114,21 @@ def main():
 		if (h < inf):
 			inf = h
 			key = i
+			ks += [i]
 	blocks = []
-	for i in range(key):
-		blocks.append(list())
-	for i in range(0, (len(base)-key),key):
-		for j in range(key):
-			blocks[j] += [base[i+j]]
-	'''
-	for b in blocks:
-		print(b)
-	'''
-	print(blocks)	
-	
-	#bs = []
-	#for i in range(len(blocks)):
-		#bs.append(list())
-	#for idx in range(len(blocks[0])):
-	#	c = [x[idx] for x in blocks]
-	#	for i, v in enumerate(c):
-	#		bs[i] += [chr(v)]
-	
-	#bs = [''.join(x) for x in bs]
-	#print(bs)
-	k = []	
-	
-	for e in blocks:
-		e = ''.join([chr(b) for b in e])
-		plaintext, key = break_cipher(e)
-		k += key
-	k = ''.join(k)
-	print(k)
-	f.close()
-	
-	print(encrypt(base, k))
-
+	for keeys in ks:
+		for i in range(keeys):
+			blocks.append(list())
+		for b in range(0,len(base),keeys):
+			rs = [b for b in bytearray(base[b:b+keeys])]
+			for idx, r in enumerate(rs):
+				blocks[idx] += [r]		
+		k = []
+		for e in blocks:
+			bs = bytes(e).decode("ascii")
+			plaintext, ky = break_cipher(bs)
+			k += [ky]
+		f.close()
+		print(k)
+		print(encrypt(base, k))
 main()
