@@ -1,5 +1,5 @@
+from base64 import b64decode
 from Crypto.Cipher import AES
-from binascii import unhexlify
 
 key = "YELLOW SUBMARINE"
 cipher = AES.new(key, AES.MODE_ECB)
@@ -7,23 +7,21 @@ cipher = AES.new(key, AES.MODE_ECB)
 def decipher(block):
 	return cipher.decrypt(block)
 
-def xor_block(block, ciphertext):
-	e = []
-	for i in range(len(block)):
-		e += [ord(block[i]) ^ ciphertext[i]]
-	return bytes(e)
+def xor_block(block, ct):
+	x = int(block.hex(), 16) ^ int(ct.hex(), 16)
+	return bytes.fromhex("{0:0{1}x}".format(x,32))
 
 def main():
 	text = []
 	f = open("10.txt","r")
 	for i in f:
-		text += i[:-1]
-	text = ''.join(text)
-	iv = [0x00] * 16
+		text += i
+	text = b64decode(''.join(text))
+	iv = b'\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
 	for i in range(0,len(text),16):
 		block = text[i:i+16]
-		x_block = xor_block(block, iv)
-		enc_block = decipher(x_block)
-		print(enc_block)
-		iv = [x for x in enc_block] 
+		nblock = decipher(block)
+		x_block = xor_block(nblock, iv)
+		iv = block
+		print(f"{x_block.decode()}", end="")
 main()
