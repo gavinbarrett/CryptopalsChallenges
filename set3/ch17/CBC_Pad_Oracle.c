@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <ctype.h>
 #include <inttypes.h>
 #include "aes.h"
 
@@ -23,14 +24,14 @@ char* messages[10] = {
 };
 
 void pad(char* string) {
-	char pad = 0x04;
 	int len = (int)strlen(string);
-	int off = BLOCK_SZ - (len % BLOCK_SZ) + 1;
+	int off = (len % BLOCK_SZ);
+	if (off > 0)
+		off = BLOCK_SZ - off;
 	int i = len;
-	for (; i < len+off-1; i++) {
-		string[i] = pad;
+	for (; i < len+off; i++) {
+		string[i] = off;
 	}
-	string[i] = 0;
 }
 
 void encipher_block(uint8_t* in, uint8_t* out) {
@@ -51,11 +52,12 @@ void xor_block(uint8_t enc_blk[], uint8_t* ciphertext) {
 		ciphertext[i] ^= enc_blk[i];
 }
 
-void encrypt(unsigned char* in, unsigned char* out, size_t sz) {
+void encrypt(unsigned char* in, unsigned char* out, size_t sz, uint8_t* iv) {
 	int blk_i = 0;
 	uint8_t enc_blk[17] = {0};
 	uint8_t ciph[17] = {0};
-	//uint8_t dec[17] = {0};
+	for (int i = 0; i < 16; i++)
+		iv[i] = ciph[i];
 	for (int i = 0; i < (int)sz; i++) {
 		if (blk_i == 16) {
 			blk_i = 0;
@@ -64,9 +66,6 @@ void encrypt(unsigned char* in, unsigned char* out, size_t sz) {
 			// decipher block
 			encipher_block(ciph, ciph);
 			strcat((char*)out, (char*)ciph);
-			//printf("%s", ciph);
-			//for (int j = 0; j < 16; j++)
-			//	ciph[j] = enc_blk[j];
 		}
 		enc_blk[blk_i] = in[i];
 		blk_i++;
@@ -74,7 +73,6 @@ void encrypt(unsigned char* in, unsigned char* out, size_t sz) {
 	xor_block(enc_blk, ciph);
 	encipher_block(ciph, ciph);
 	strcat((char*)out, (char*)ciph);
-	//printf("%s\n", ciph);
 }
 
 void decrypt(unsigned char* out, size_t sz) {
@@ -101,6 +99,27 @@ void decrypt(unsigned char* out, size_t sz) {
 	printf("%s\n", ciph);
 }
 
+int check_validity(char str[]) {
+	int sz = (int)strlen(str);
+	char pad_byte = str[sz-1];
+	if (pad_byte > 0x0f)
+		return 1;
+	for (int i = sz-1; i > sz-((int)pad_byte)-1; i--) {
+		if (str[i] == pad_byte)
+			continue;
+		else
+			return 0;
+	}
+	return 1;
+}
+
+int valid_pad(char* ciphertext, size_t size) {
+	// decrypt the ciphertext
+	decrypt((unsigned char*)ciphertext, size);
+	// check correct PKCS padding
+	return check_validity(ciphertext);
+}
+
 int main() {
 	// get time
 	int n = time(NULL);
@@ -111,8 +130,8 @@ int main() {
 	// get a random number
 	int r = rand() % 10;
 	
-	char arr[1000] = {0};
-	strcpy(arr, messages[r]);
+	char plaintext[1000] = {0};
+	strcpy(plaintext, messages[r]);
 
 	uint8_t key[16];
 
@@ -123,14 +142,20 @@ int main() {
 	AES_init_ctx(&ctx, key);
 
 	// pad the string
-	pad(arr);
+	pad(plaintext);
 
-	size_t sz = (size_t)strlen(arr);
-	char out[1000] = {0};
-	encrypt((unsigned char*)arr, (unsigned char*)out, sz);
-	printf("%s\n", out);
+	size_t sz = (size_t)strlen(plaintext);
+	
+	char ciphertext[1000] = {0};
+	uint8_t iv[17] = {0};
 
-	decrypt((unsigned char*)out, sz);
+	encrypt((unsigned char*)plaintext, (unsigned char*)ciphertext, sz, iv);
+
+	//printf("%s\n", ciphertext);
+	decrypt((unsigned char*)ciphertext, sz);
+
+	if (valid_pad(ciphertext, sz))
+		printf("\nValid PKCS padding!");
 
 	return 0;
 }
