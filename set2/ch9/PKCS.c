@@ -25,7 +25,7 @@ void pad(char* string) {
 
 int main() {
 	char x[1000] = {0};
-	strcpy(x, "YELLOW SUBMAR");
+	strcpy(x, "YELLOW 9");
 	pad(x);
 	for (int i = 0; i < (int)strlen(x); i++)
 		printf("%02x ", x[i]);
