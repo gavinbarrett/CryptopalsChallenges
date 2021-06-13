@@ -45,7 +45,7 @@ void twist() {
 unsigned int extract_number() {
 	if (index >= n) {
 		if (index > n) {
-			printf("Generator was never seeded\n");
+			printf("Generator was never seeded.\n");
 			exit(0);
 		}
 		twist();
@@ -60,7 +60,6 @@ unsigned int extract_number() {
 }
 
 int main() {
-
 	// get a 16 bit key
 	short seed = (short)time(NULL);	
 	seed_mt(seed);
@@ -77,9 +76,8 @@ int main() {
 	seed_mt(seed);
 	for (int i = 0; i < (int)strlen(message); i+=4) {
 		unsigned int keystream = extract_number();
-		for (int j = 0; j < 4; j++) {
+		for (int j = 0; j < 4; j++)
 			message[i+j] ^= (keystream >> (j*8));
-		}
 	}
 	printf("Decrypted message: %s\n", message);
 	return 0;
